@@ -2,20 +2,22 @@
 
 # Data Settings
 data:
-  filepath: "data/DAX_5min.csv"  # Path to OHLCV data
-  date_column: "timestamp"
+  filepath: "data/dax_2019_5m.csv"  # Path to OHLCV data
+  date_column: "Datetime"  # Changed to match your CSV
   ohlcv_columns:
-    open: "open"
-    high: "high"
-    low: "low"
-    close: "close"
-    volume: "volume"
+    open: "Open"      # Capitalized to match your CSV
+    high: "High"
+    low: "Low"
+    close: "Close"
+    volume: "Volume"  # Will be auto-generated if missing
   timeframe: "5min"
 
-# Trading Session (for DAX - adjust per index)
+# Trading Session (for DAX - UTC timezone to match your data)
+# Your data appears to be in UTC (+00:00)
+# DAX hours: 08:00-22:00 CET = 07:00-21:00 UTC (winter) or 06:00-20:00 UTC (summer)
 session:
-  start_time: "09:00"
-  end_time: "22:00"
+  start_time: "06:00"  # Covers both summer/winter UTC hours
+  end_time: "21:00"
   entry_cutoff: "16:00"  # No new entries after this time
   exit_buffer: 30  # Minutes before session end to close all positions
   skip_first_minutes: 15  # Skip first N minutes of session
