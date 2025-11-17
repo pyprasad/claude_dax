@@ -1,5 +1,6 @@
 """
 Diagnostic Tool - Analyze why signals aren't being generated
+Updated to work with real DAX data format
 """
 
 import pandas as pd
@@ -18,18 +19,26 @@ def diagnose_signals(config_path='config.yaml'):
     # Load data
     filepath = config['data']['filepath']
     df = pd.read_csv(filepath)
-    df[config['data']['date_column']] = pd.to_datetime(df[config['data']['date_column']])
-    df = df.set_index(config['data']['date_column'])
+    date_col = config['data']['date_column']
+    df[date_col] = pd.to_datetime(df[date_col])
+    df = df.set_index(date_col)
 
     # Rename columns
     col_map = config['data']['ohlcv_columns']
-    df = df.rename(columns={
+    rename_dict = {
         col_map['open']: 'open',
         col_map['high']: 'high',
         col_map['low']: 'low',
         col_map['close']: 'close',
-        col_map['volume']: 'volume'
-    })
+    }
+    if col_map['volume'] in df.columns:
+        rename_dict[col_map['volume']] = 'volume'
+
+    df = df.rename(columns=rename_dict)
+
+    if 'volume' not in df.columns:
+        df['volume'] = 1000
+
     df = df[['open', 'high', 'low', 'close', 'volume']]
 
     # Calculate indicators
@@ -37,7 +46,7 @@ def diagnose_signals(config_path='config.yaml'):
     data = calculate_all_indicators(df, config)
     data = data.dropna()
 
-    print(f"\nTotal bars after indicators: {len(data)}\n")
+    print(f"\nTotal bars after indicators: {len(data):,}\n")
 
     # Initialize strategy
     strategy = ARIStrategy(config)
@@ -108,7 +117,7 @@ def diagnose_signals(config_path='config.yaml'):
         if strategy.momentum_long_signal(row, prev_row) and strategy.is_entry_allowed(timestamp):
             momentum_conditions['ALL CONDITIONS'] += 1
 
-    print(f"\nCondition Pass Rates (out of {len(data)-1} bars):")
+    print(f"\nCondition Pass Rates (out of {len(data)-1:,} bars):")
     for condition, count in momentum_conditions.items():
         pct = (count / (len(data)-1)) * 100
         bar = '█' * int(pct / 2)
@@ -157,7 +166,7 @@ def diagnose_signals(config_path='config.yaml'):
         if strategy.mean_reversion_long_signal(row, prev_row) and strategy.is_entry_allowed(timestamp):
             mr_conditions['ALL CONDITIONS'] += 1
 
-    print(f"\nCondition Pass Rates (out of {len(data)-1} bars):")
+    print(f"\nCondition Pass Rates (out of {len(data)-1:,} bars):")
     for condition, count in mr_conditions.items():
         pct = (count / (len(data)-1)) * 100
         bar = '█' * int(pct / 2)
@@ -183,32 +192,40 @@ def diagnose_signals(config_path='config.yaml'):
 
     # Recommendations
     print("\n" + "=" * 80)
-    print("RECOMMENDATIONS")
+    print("RECOMMENDATIONS FOR YOUR DATA")
     print("=" * 80)
 
-    print("\nBased on the analysis above:")
+    print("\nBased on the analysis above:\n")
 
-    if momentum_conditions['ALL CONDITIONS'] == 0:
-        print("\n⚠️  NO MOMENTUM SIGNALS GENERATED")
-        print("   Possible fixes:")
-        print("   1. Lower ADX momentum threshold (try 20 instead of 25)")
-        print("   2. Reduce ATR expansion requirement (try 1.1 instead of 1.2)")
-        print("   3. Lower RSI min (try 45 instead of 50)")
+    # Calculate optimal thresholds
+    adx_50th = adx_values.quantile(0.50)
+    adx_30th = adx_values.quantile(0.30)
 
-    if mr_conditions['ALL CONDITIONS'] == 0:
-        print("\n⚠️  NO MEAN-REVERSION SIGNALS GENERATED")
-        print("   Possible fixes:")
-        print("   1. Raise ADX ranging threshold (try 25 instead of 20)")
-        print("   2. Increase RSI2 threshold (try 15 instead of 10)")
-        print("   3. Relax BB requirement")
+    print("📊 SUGGESTED PARAMETER CHANGES:")
+    print("-" * 80)
 
-    if adx_values.mean() < config['strategy']['adx_momentum_threshold']:
-        print(f"\n⚠️  AVERAGE ADX ({adx_values.mean():.1f}) < MOMENTUM THRESHOLD ({config['strategy']['adx_momentum_threshold']})")
-        print(f"   Recommendation: Lower momentum threshold to {int(adx_values.quantile(0.75))}")
+    if momentum_conditions['ALL CONDITIONS'] < 50:
+        print("\n⚠️  MOMENTUM MODE: Very few signals")
+        print(f"   Current ADX threshold: {config['strategy']['adx_momentum_threshold']}")
+        print(f"   Recommended: {int(adx_50th)} (median ADX)")
+        print(f"   Or try: {int(adx_50th * 0.8)} for more trades")
+        print(f"\n   Lower breakout lookback: 15 → 10 bars")
+        print(f"   Lower ATR expansion: 1.2 → 1.1")
+        print(f"   Lower RSI min: 50 → 45")
+
+    if mr_conditions['ALL CONDITIONS'] < 50:
+        print("\n⚠️  MEAN-REVERSION MODE: Very few signals")
+        print(f"   Current ADX threshold: {config['strategy']['adx_ranging_threshold']}")
+        print(f"   Recommended: {int(adx_30th)} (30th percentile)")
+        print(f"\n   Increase RSI2 threshold: 10 → 15 or 20")
+        print(f"   Tighten BB: std 2.0 → 1.5")
+        print(f"   Disable confirmation candle requirement")
 
     print("\n" + "=" * 80)
-    print("\nTo apply fixes, edit config.yaml and re-run backtest")
-    print("Or use real market data which will have more realistic regime transitions")
+    print("\n💡 NEXT STEPS:")
+    print("   1. I'll create an optimized config for you")
+    print("   2. Run backtest with new parameters")
+    print("   3. Should get 50-150 trades (proper sample size)")
     print("=" * 80)
 
 
