@@ -55,13 +55,24 @@ def load_data(config: dict) -> pd.DataFrame:
 
     # Rename columns to standard names
     col_map = config['data']['ohlcv_columns']
-    df = df.rename(columns={
+    rename_dict = {
         col_map['open']: 'open',
         col_map['high']: 'high',
         col_map['low']: 'low',
         col_map['close']: 'close',
-        col_map['volume']: 'volume'
-    })
+    }
+
+    # Only rename volume if it exists in the CSV
+    if col_map['volume'] in df.columns:
+        rename_dict[col_map['volume']] = 'volume'
+
+    df = df.rename(columns=rename_dict)
+
+    # Add volume column if missing (use constant value for indices)
+    if 'volume' not in df.columns:
+        print("WARNING: Volume column not found. Using constant volume (1000).")
+        print("         This is acceptable for index data where volume is less relevant.")
+        df['volume'] = 1000
 
     # Keep only OHLCV
     df = df[['open', 'high', 'low', 'close', 'volume']]

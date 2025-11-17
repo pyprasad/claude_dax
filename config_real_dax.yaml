@@ -1,0 +1,101 @@
+# Adaptive Regime Intraday (ARI) Strategy Configuration
+# Configuration for real DAX data (2019+)
+
+# Data Settings
+data:
+  filepath: "data/dax_2019_5m.csv"  # Your real DAX data
+  date_column: "Datetime"  # Changed from "timestamp" to match your CSV
+  ohlcv_columns:
+    open: "Open"      # Capitalized to match your CSV
+    high: "High"
+    low: "Low"
+    close: "Close"
+    volume: "Volume"  # Will be generated if missing
+  timeframe: "5min"
+
+# Trading Session (for DAX - UTC timezone)
+session:
+  start_time: "07:00"  # DAX opens 08:00 CET = 07:00 UTC (winter) / 06:00 UTC (summer)
+  end_time: "21:00"    # DAX closes 22:00 CET = 21:00 UTC (winter) / 20:00 UTC (summer)
+  entry_cutoff: "16:00"  # No new entries after this time
+  exit_buffer: 30  # Minutes before session end to close all positions
+  skip_first_minutes: 15  # Skip first N minutes of session
+
+# Strategy Parameters
+strategy:
+  # Regime Detection
+  adx_period: 14
+  adx_momentum_threshold: 25  # Above = momentum mode
+  adx_ranging_threshold: 20   # Below = mean-reversion mode
+
+  # Trend Filters
+  fast_ma_period: 50
+  slow_ma_period: 200
+  regime_ma_period: 50
+
+  # Momentum Entry
+  momentum:
+    rsi_period: 14
+    rsi_min: 50
+    breakout_lookback: 20
+    volume_ma_period: 20
+    atr_expansion_threshold: 1.2
+    atr_expansion_period: 50
+
+  # Mean-Reversion Entry
+  mean_reversion:
+    rsi2_period: 2
+    rsi2_oversold: 10
+    rsi2_overbought: 90
+    bb_period: 20
+    bb_std: 2.0
+    rsi_divergence_period: 14
+    require_confirmation_candle: true
+
+  # Risk Management
+  risk:
+    risk_per_trade_pct: 1.0
+    momentum_stop_atr_mult: 2.0
+    mean_reversion_stop_atr_mult: 1.5
+    atr_period: 14
+
+    # Take Profit
+    momentum_tp1_r: 2.0
+    momentum_tp2_r: 3.0
+    mean_reversion_tp_r: 1.5
+    partial_exit_pct: 0.5
+
+    # Trailing Stop
+    trailing_atr_mult: 1.5
+    min_profit_lock_r: 1.5
+
+  # Volatility Filters
+  volatility:
+    atr_zscore_threshold: 2.5
+    atr_zscore_period: 100
+    vix_high: 30
+    vix_extreme: 40
+    reduce_size_factor: 0.5
+
+  # Risk Controls
+  controls:
+    max_consecutive_losses: 3
+    daily_loss_limit_pct: 2.0
+    max_positions: 1
+
+# Backtest Settings
+backtest:
+  initial_capital: 100000
+  currency: "EUR"
+  point_value: 1.0
+  commission_per_contract: 2.50
+  slippage_atr_mult: 0.5
+
+# Output Settings
+output:
+  trade_log_path: "results/trade_log.csv"
+  equity_curve_path: "results/equity_curve.csv"
+  performance_report_path: "results/performance_report.txt"
+  plot_equity_curve: true
+  plot_drawdown: true
+  plot_monthly_returns: true
