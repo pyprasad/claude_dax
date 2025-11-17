@@ -1,0 +1,101 @@
+# Adaptive Regime Intraday (ARI) Strategy - RELAXED Configuration
+# Optimized for synthetic/smoother data or less volatile markets
+
+# Data Settings
+data:
+  filepath: "data/DAX_5min.csv"
+  date_column: "timestamp"
+  ohlcv_columns:
+    open: "open"
+    high: "high"
+    low: "low"
+    close: "close"
+    volume: "volume"
+  timeframe: "5min"
+
+# Trading Session
+session:
+  start_time: "09:00"
+  end_time: "22:00"
+  entry_cutoff: "18:00"  # Extended entry window
+  exit_buffer: 30
+  skip_first_minutes: 10  # Reduced from 15
+
+# Strategy Parameters
+strategy:
+  # Regime Detection - RELAXED
+  adx_period: 14
+  adx_momentum_threshold: 20  # Lowered from 25
+  adx_ranging_threshold: 25   # Raised from 20 (wider range)
+
+  # Trend Filters
+  fast_ma_period: 50
+  slow_ma_period: 200
+  regime_ma_period: 50
+
+  # Momentum Entry - RELAXED
+  momentum:
+    rsi_period: 14
+    rsi_min: 45  # Lowered from 50
+    breakout_lookback: 15  # Reduced from 20 (easier to break)
+    volume_ma_period: 20
+    atr_expansion_threshold: 1.1  # Lowered from 1.2
+    atr_expansion_period: 50
+
+  # Mean-Reversion Entry - RELAXED
+  mean_reversion:
+    rsi2_period: 2
+    rsi2_oversold: 15  # Raised from 10 (easier to hit)
+    rsi2_overbought: 85  # Lowered from 90
+    bb_period: 20
+    bb_std: 1.8  # Tighter bands (from 2.0)
+    rsi_divergence_period: 14
+    require_confirmation_candle: false  # Disabled for more signals
+
+  # Risk Management - CONSERVATIVE (tighter stops for more signals)
+  risk:
+    risk_per_trade_pct: 0.75  # Reduced from 1.0
+    momentum_stop_atr_mult: 1.8  # Tighter from 2.0
+    mean_reversion_stop_atr_mult: 1.3  # Tighter from 1.5
+    atr_period: 14
+
+    # Take Profit
+    momentum_tp1_r: 2.0
+    momentum_tp2_r: 3.0
+    mean_reversion_tp_r: 1.5
+    partial_exit_pct: 0.5
+
+    # Trailing Stop
+    trailing_atr_mult: 1.5
+    min_profit_lock_r: 1.5
+
+  # Volatility Filters - RELAXED
+  volatility:
+    atr_zscore_threshold: 3.0  # Raised from 2.5 (less restrictive)
+    atr_zscore_period: 100
+    vix_high: 35  # Raised from 30
+    vix_extreme: 50  # Raised from 40
+    reduce_size_factor: 0.5
+
+  # Risk Controls
+  controls:
+    max_consecutive_losses: 3
+    daily_loss_limit_pct: 2.0
+    max_positions: 1
+
+# Backtest Settings
+backtest:
+  initial_capital: 100000
+  currency: "EUR"
+  point_value: 1.0
+  commission_per_contract: 2.50
+  slippage_atr_mult: 0.5
+
+# Output Settings
+output:
+  trade_log_path: "results/trade_log.csv"
+  equity_curve_path: "results/equity_curve.csv"
+  performance_report_path: "results/performance_report.txt"
+  plot_equity_curve: true
+  plot_drawdown: true
+  plot_monthly_returns: true

@@ -114,9 +114,10 @@ def main():
     print("=" * 80)
     print()
 
-    # Load configuration
-    print("Loading configuration...")
-    config = load_config('config.yaml')
+    # Load configuration (allow command line override)
+    config_file = sys.argv[1] if len(sys.argv) > 1 else 'config.yaml'
+    print(f"Loading configuration from {config_file}...")
+    config = load_config(config_file)
     print("Configuration loaded ✓")
     print()
 

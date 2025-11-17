@@ -1,0 +1,85 @@
+# TEST Configuration - For synthetic data demonstration
+# NOT for live trading - parameters are intentionally loose
+
+data:
+  filepath: "data/DAX_5min.csv"
+  date_column: "timestamp"
+  ohlcv_columns:
+    open: "open"
+    high: "high"
+    low: "low"
+    close: "close"
+    volume: "volume"
+  timeframe: "5min"
+
+session:
+  start_time: "09:00"
+  end_time: "22:00"
+  entry_cutoff: "20:00"  # Very late entries allowed
+  exit_buffer: 15
+  skip_first_minutes: 5  # Minimal skip
+
+strategy:
+  adx_period: 14
+  adx_momentum_threshold: 18  # Very low
+  adx_ranging_threshold: 30   # Very high (wide no-trade zone)
+
+  fast_ma_period: 20  # Faster MAs
+  slow_ma_period: 50
+  regime_ma_period: 20
+
+  momentum:
+    rsi_period: 14
+    rsi_min: 40  # Very low
+    breakout_lookback: 10  # Much easier to break
+    volume_ma_period: 30  # Longer average (easier to exceed)
+    atr_expansion_threshold: 1.05  # Minimal expansion needed
+    atr_expansion_period: 50
+
+  mean_reversion:
+    rsi2_period: 2
+    rsi2_oversold: 20  # Much easier to hit
+    rsi2_overbought: 80
+    bb_period: 20
+    bb_std: 1.5  # Tighter bands
+    rsi_divergence_period: 14
+    require_confirmation_candle: false
+
+  risk:
+    risk_per_trade_pct: 0.5  # Lower risk
+    momentum_stop_atr_mult: 1.5
+    mean_reversion_stop_atr_mult: 1.2
+    atr_period: 14
+    momentum_tp1_r: 1.5
+    momentum_tp2_r: 2.5
+    mean_reversion_tp_r: 1.2
+    partial_exit_pct: 0.5
+    trailing_atr_mult: 1.3
+    min_profit_lock_r: 1.0
+
+  volatility:
+    atr_zscore_threshold: 4.0  # Very permissive
+    atr_zscore_period: 100
+    vix_high: 50
+    vix_extreme: 80
+    reduce_size_factor: 0.75
+
+  controls:
+    max_consecutive_losses: 5
+    daily_loss_limit_pct: 3.0
+    max_positions: 1
+
+backtest:
+  initial_capital: 100000
+  currency: "EUR"
+  point_value: 1.0
+  commission_per_contract: 2.50
+  slippage_atr_mult: 0.3  # Lower slippage
+
+output:
+  trade_log_path: "results/trade_log.csv"
+  equity_curve_path: "results/equity_curve.csv"
+  performance_report_path: "results/performance_report.txt"
+  plot_equity_curve: true
+  plot_drawdown: true
+  plot_monthly_returns: true
