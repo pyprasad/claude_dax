@@ -184,6 +184,11 @@ def calculate_professional_indicators(df: pd.DataFrame, config: dict) -> pd.Data
     # ATR for stops/targets
     data['ATR'] = atr(data['high'], data['low'], data['close'], 14)
 
+    # ATR Z-score (for volatility filtering)
+    atr_mean = data['ATR'].rolling(window=100).mean()
+    atr_std = data['ATR'].rolling(window=100).std()
+    data['ATR_ZScore'] = (data['ATR'] - atr_mean) / atr_std
+
     # Trend direction (simple: price vs EMAs)
     data['uptrend'] = data['close'] > data['EMA_50']
     data['strong_uptrend'] = (data['close'] > data['EMA_20']) & \
