@@ -1,0 +1,104 @@
+# OVERNIGHT/AFTER-HOURS DAX STRATEGY
+# Designed for 23:00+ UTC session (low liquidity, trending characteristics)
+#
+# Key differences from main session:
+# - MOMENTUM FOCUS (not mean-reversion)
+# - Wider stops (lower liquidity = more slippage)
+# - Gap trading logic
+# - Trend continuation instead of reversals
+
+data:
+  filepath: "data/dax_2019_5m.csv"
+  date_column: "Datetime"
+  ohlcv_columns:
+    open: "Open"
+    high: "High"
+    low: "Low"
+    close: "Close"
+    volume: "Volume"
+  timeframe: "5min"
+
+# Session - Overnight hours
+session:
+  start_time: "23:00"  # When your data actually starts
+  end_time: "07:00"    # Before main session opens
+  entry_cutoff: "05:00"
+  exit_buffer: 60
+  skip_first_minutes: 5
+
+# MOMENTUM-FOCUSED STRATEGY (not mean-reversion)
+strategy:
+  # Regime - Lower thresholds for overnight
+  adx_period: 14
+  adx_momentum_threshold: 15  # Much lower (overnight has less volatility)
+  adx_ranging_threshold: 30   # Higher (avoid ranging in overnight)
+
+  # Faster MAs for overnight trends
+  fast_ma_period: 10
+  slow_ma_period: 20
+  regime_ma_period: 10
+
+  # MOMENTUM ONLY (mean-reversion disabled by making it impossible)
+  momentum:
+    rsi_period: 14
+    rsi_min: 40  # Very low threshold
+    breakout_lookback: 5  # Short lookback for overnight
+    volume_ma_period: 50  # Long average (always exceeds in overnight)
+    atr_expansion_threshold: 1.05  # Very low
+    atr_expansion_period: 30
+
+  # Mean-reversion - EFFECTIVELY DISABLED
+  mean_reversion:
+    rsi2_period: 2
+    rsi2_oversold: 5  # Impossible to hit
+    rsi2_overbought: 95
+    bb_period: 20
+    bb_std: 3.0  # Very wide (won't trigger)
+    rsi_divergence_period: 14
+    require_confirmation_candle: true  # Extra filter
+
+  # WIDER STOPS for overnight slippage
+  risk:
+    risk_per_trade_pct: 0.5  # Smaller size for overnight
+    momentum_stop_atr_mult: 2.5  # Much wider (overnight has gaps)
+    mean_reversion_stop_atr_mult: 2.0
+    atr_period: 14
+
+    # Wider targets (overnight trends run further)
+    momentum_tp1_r: 2.5
+    momentum_tp2_r: 4.0
+    mean_reversion_tp_r: 1.5
+    partial_exit_pct: 0.5
+
+    # Wider trailing
+    trailing_atr_mult: 2.0
+    min_profit_lock_r: 1.5
+
+  # Less restrictive volatility filters
+  volatility:
+    atr_zscore_threshold: 4.0
+    atr_zscore_period: 100
+    vix_high: 50
+    vix_extreme: 80
+    reduce_size_factor: 0.75
+
+  # More lenient controls for overnight
+  controls:
+    max_consecutive_losses: 5
+    daily_loss_limit_pct: 3.0
+    max_positions: 1
+
+backtest:
+  initial_capital: 100000
+  currency: "EUR"
+  point_value: 1.0
+  commission_per_contract: 3.50  # Higher for overnight
+  slippage_atr_mult: 0.8  # More slippage overnight
+
+output:
+  trade_log_path: "results/trade_log.csv"
+  equity_curve_path: "results/equity_curve.csv"
+  performance_report_path: "results/performance_report.txt"
+  plot_equity_curve: true
+  plot_drawdown: true
+  plot_monthly_returns: true
