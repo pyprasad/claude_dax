@@ -1,0 +1,75 @@
+# V4 INVERSE ORB STRATEGY - FADE FALSE BREAKOUTS
+# Professional Counter-Trend Edge on DAX
+#
+# Uses V3 detection logic but trades OPPOSITE direction
+# Hypothesis: DAX false breakouts → Fading is profitable
+
+data:
+  filepath: "data/DAX_5min_realistic.csv"
+  date_column: "timestamp"
+  ohlcv_columns:
+    open: "open"
+    high: "high"
+    low: "low"
+    close: "close"
+    volume: "volume"
+  timeframe: "5min"
+
+session:
+  start_time: "09:00"
+  end_time: "22:00"
+  entry_cutoff: "19:00"
+  exit_buffer: 30
+  skip_first_minutes: 0
+
+strategy:
+  or_period_minutes: 30
+
+  # V3 Regime Detection (keep this - filter to trending markets)
+  use_regime_filter: true
+  regime:
+    adx_threshold: 20        # Only fade in trending markets
+    atr_zscore_threshold: -0.5
+
+  # V3 Risk Management (same as before)
+  risk:
+    risk_per_trade_pct: 1.0
+
+    # Stops (same as V3)
+    orb_stop_mult: 1.5
+    vwap_stop_mult: 2.0
+    momentum_stop_mult: 2.5
+
+    # Targets (same as V3)
+    orb_target_mult: 2.0
+    vwap_target_mult: 2.0
+    momentum_target_mult: 2.0
+
+    # Trailing
+    trailing_atr_mult: 1.5
+    activate_trail_at_r: 0.8
+    min_profit_lock_r: 0.5
+
+    atr_period: 14
+
+  # Risk Controls (same as V3)
+  controls:
+    max_consecutive_losses: 10
+    daily_loss_limit_pct: 5.0
+    max_positions: 1
+    max_trades_per_day: 6
+
+backtest:
+  initial_capital: 100000
+  currency: "EUR"
+  point_value: 1.0
+  commission_per_contract: 2.50
+  slippage_atr_mult: 0.3
+
+output:
+  trade_log_path: "results_inverse/trade_log.csv"
+  equity_curve_path: "results_inverse/equity_curve.csv"
+  performance_report_path: "results_inverse/performance_report.txt"
+  plot_equity_curve: true
+  plot_drawdown: true
+  plot_monthly_returns: true
