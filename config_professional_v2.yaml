@@ -1,0 +1,73 @@
+# PROFESSIONAL DAX INTRADAY STRATEGY V2
+# IMPROVED with real professional trader tactics
+#
+# Key changes from V1:
+# - WIDER STOPS: 1.5-2.5x ATR (vs 1-2x) - let trades breathe
+# - LOWER TARGETS: 1.2R and 2.0R (vs 1.8R and 3-4R) - realistic
+# - EARLIER TRAILING: Activates at 0.8R (vs 1.5R)
+# - BETTER FILTERS: Time-of-day, pullback entry, OR size minimum
+# - MOVE TO BREAKEVEN: After TP1, stop moves to breakeven
+
+data:
+  filepath: "data/DAX_5min_realistic.csv"
+  date_column: "timestamp"
+  ohlcv_columns:
+    open: "open"
+    high: "high"
+    low: "low"
+    close: "close"
+    volume: "volume"
+  timeframe: "5min"
+
+session:
+  start_time: "09:00"  # CET - DAX main session start
+  end_time: "22:00"    # CET - DAX main session end
+  entry_cutoff: "19:00"  # Stop new entries 3 hours before close
+  exit_buffer: 30
+  skip_first_minutes: 0  # We want to catch opening range
+
+strategy:
+  or_period_minutes: 30  # Opening range = first 30 minutes
+
+  # IMPROVED Risk Management - Professional approach
+  risk:
+    risk_per_trade_pct: 1.0  # 1% risk per trade
+
+    # WIDER STOPS (let trades breathe, reduce whipsaw)
+    orb_stop_mult: 1.5      # ORB: 1.5× ATR (increased from 1.0)
+    vwap_stop_mult: 2.0     # VWAP: 2× ATR (increased from 1.5)
+    momentum_stop_mult: 2.5  # Momentum: 2.5× ATR (increased from 2.0)
+
+    # REALISTIC TARGETS (take profit sooner, compound more trades)
+    orb_target_mult: 2.0    # ORB: 2R (R = risk)
+    vwap_target_mult: 2.0   # VWAP: 2R (reduced from 3R)
+    momentum_target_mult: 2.0  # Momentum: 2R (reduced from 4R)
+
+    # IMPROVED Trailing stop (activates earlier, locks profit sooner)
+    trailing_atr_mult: 1.5  # Trail by 1.5× ATR (tighter trail)
+    activate_trail_at_r: 0.8  # Activate after 0.8R profit (earlier!)
+    min_profit_lock_r: 0.5  # Move to breakeven after TP1 (0.5R profit locked)
+
+    atr_period: 14
+
+  # Risk Controls (slightly more lenient for more data)
+  controls:
+    max_consecutive_losses: 6  # Can handle more losses (was 5)
+    daily_loss_limit_pct: 3.0  # 3% daily max
+    max_positions: 1  # One at a time
+    max_trades_per_day: 4  # Max 4 entries per day (was 3)
+
+backtest:
+  initial_capital: 100000
+  currency: "EUR"
+  point_value: 1.0
+  commission_per_contract: 2.50
+  slippage_atr_mult: 0.3  # Less slippage (main session, tight spreads)
+
+output:
+  trade_log_path: "results_v2/trade_log.csv"
+  equity_curve_path: "results_v2/equity_curve.csv"
+  performance_report_path: "results_v2/performance_report.txt"
+  plot_equity_curve: true
+  plot_drawdown: true
+  plot_monthly_returns: true

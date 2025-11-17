@@ -1,0 +1,79 @@
+================================================================================
+ADAPTIVE REGIME INTRADAY (ARI) STRATEGY - BACKTEST RESULTS
+================================================================================
+
+OVERALL PERFORMANCE
+--------------------------------------------------------------------------------
+Initial Capital:        $100,000.00
+Final Equity:           $115,424.42
+Total P&L:              $15,424.42
+Total Return:           15.42%
+CAGR:                   82.62%
+Max Drawdown:           10.32%
+
+TRADE STATISTICS
+--------------------------------------------------------------------------------
+Total Trades:           252
+Winning Trades:         197
+Losing Trades:          55
+Win Rate:               78.17%
+Profit Factor:          1.25
+Expectancy:             $61.21
+
+WIN/LOSS ANALYSIS
+--------------------------------------------------------------------------------
+Average Win:            $396.06
+Average Loss:           $-1138.18
+Avg Win/Avg Loss:       0.35
+Largest Win:            $1144.47
+Largest Loss:           $-2196.61
+
+HOLDING TIME
+--------------------------------------------------------------------------------
+Average Holding Time:   45.1 minutes (0.75 hours)
+Min Holding Time:       5.0 minutes
+Max Holding Time:       340.0 minutes
+
+STRATEGY TYPE BREAKDOWN
+--------------------------------------------------------------------------------
+
+ORB_LONG:
+  Trades: 152, Win Rate: 82.2%, P&L: $19459.29
+
+ORB_SHORT:
+  Trades: 86, Win Rate: 76.7%, P&L: $2817.97
+
+MOMENTUM_SHORT:
+  Trades: 4, Win Rate: 50.0%, P&L: $-2447.21
+
+VWAP_LONG:
+  Trades: 4, Win Rate: 0.0%, P&L: $-4863.99
+
+MOMENTUM_LONG:
+  Trades: 4, Win Rate: 75.0%, P&L: $263.56
+
+VWAP_SHORT:
+  Trades: 2, Win Rate: 50.0%, P&L: $194.79
+
+RISK METRICS
+--------------------------------------------------------------------------------
+Sharpe Ratio:           1.12
+Sortino Ratio:          1.13
+Calmar Ratio:           8.00
+Max Consecutive Wins:   18
+Max Consecutive Losses: 4
+
+MAE/MFE ANALYSIS (Maximum Adverse/Favorable Excursion)
+--------------------------------------------------------------------------------
+Average MAE:            $57.63
+Average MFE:            $174.90
+MFE/MAE Ratio:          3.03
+
+MONTHLY RETURNS
+--------------------------------------------------------------------------------
+Best Month:             11.28%
+Worst Month:            -0.35%
+Avg Monthly Return:     5.14%
+Positive Months:        2/3
+
+================================================================================

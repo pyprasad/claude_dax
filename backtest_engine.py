@@ -51,6 +51,34 @@ class Position:
             self.mfe = max(self.mfe, self.entry_price - self.lowest_price)
             self.mae = max(self.mae, self.highest_price - self.entry_price)
 
+    def activate_trailing_if_profitable(self, current_price, activate_at_r: float):
+        """
+        Activate trailing stop if profit reaches threshold
+
+        Args:
+            current_price: Current market price
+            activate_at_r: Activate trailing when profit reaches this R multiple
+        """
+        if self.trailing_active:
+            return  # Already active
+
+        # Calculate current profit in R
+        risk = abs(self.entry_price - self.stop_loss)
+        if risk == 0:
+            return
+
+        if self.direction == 1:  # Long
+            profit = current_price - self.entry_price
+        else:  # Short
+            profit = self.entry_price - current_price
+
+        profit_r = profit / risk
+
+        # Activate if profit threshold reached
+        if profit_r >= activate_at_r:
+            self.trailing_active = True
+            self.trailing_stop = self.stop_loss  # Initialize at current stop
+
     def update_trailing_stop(self, current_price):
         """Update trailing stop if conditions met"""
         if not self.trailing_active:
@@ -345,6 +373,10 @@ class BacktestEngine:
 
                 # Update MAE/MFE
                 pos.update_extremes(current_row['high'], current_row['low'])
+
+                # Activate trailing stop if profit threshold reached
+                activate_at_r = self.config['strategy']['risk'].get('activate_trail_at_r', 1.5)
+                pos.activate_trailing_if_profitable(current_row['close'], activate_at_r)
 
                 # Update trailing stop
                 pos.update_trailing_stop(current_row['close'])
