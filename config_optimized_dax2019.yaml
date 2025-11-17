@@ -4,7 +4,7 @@
 
 # Data Settings
 data:
-  filepath: "data/dax_2019_5m.csv"
+  filepath: "data/dax_2019_5m_main_session.csv"  # MAIN SESSION ONLY (06:00-21:00 UTC)
   date_column: "Datetime"
   ohlcv_columns:
     open: "Open"
