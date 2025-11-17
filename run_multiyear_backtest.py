@@ -158,16 +158,13 @@ def run_year_backtest(year, data, config):
     print(f"  Sharpe Ratio: {results.get('sharpe_ratio', 0):.2f}")
 
     # Strategy breakdown
-    strategy_breakdown = grouped.groupby('signal_type').agg({
-        'pnl': ['count', 'sum', lambda x: (x > 0).sum() / len(x) * 100]
-    }).round(2)
-
     print("\nStrategy breakdown:")
-    for idx, row in strategy_breakdown.iterrows():
-        trades = int(row['pnl']['count'])
-        pnl = row['pnl']['sum']
-        wr = row['pnl']['<lambda>']
-        print(f"  {idx}: {trades} trades, {wr:.1f}% WR, ${pnl:,.2f}")
+    for strategy_type in grouped['signal_type'].unique():
+        strat_trades = grouped[grouped['signal_type'] == strategy_type]
+        count = len(strat_trades)
+        total_pnl = strat_trades['pnl'].sum()
+        wr = (strat_trades['pnl'] > 0).sum() / len(strat_trades) * 100
+        print(f"  {strategy_type}: {count} trades, {wr:.1f}% WR, ${total_pnl:,.2f}")
 
     return {
         'year': year,
