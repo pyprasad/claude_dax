@@ -1,0 +1,79 @@
+# PROFESSIONAL DAX INTRADAY STRATEGY V3
+# RELAXED ENTRY FILTERS + REGIME DETECTION
+#
+# Key changes from V2:
+# - RELAXED ENTRY: No pullback wait, immediate breakout
+# - ALL-DAY ORB: Not limited to first 2 hours
+# - LOWER FILTERS: 30% OR size minimum (vs 50%)
+# - REGIME DETECTION: Only trade trending markets (ADX-based)
+# - HIGHER LIMITS: More consecutive losses allowed (since we're filtering better)
+
+data:
+  filepath: "data/DAX_5min_realistic.csv"
+  date_column: "timestamp"
+  ohlcv_columns:
+    open: "open"
+    high: "high"
+    low: "low"
+    close: "close"
+    volume: "volume"
+  timeframe: "5min"
+
+session:
+  start_time: "09:00"  # CET - DAX main session start
+  end_time: "22:00"    # CET - DAX main session end
+  entry_cutoff: "19:00"  # Stop new entries 3 hours before close
+  exit_buffer: 30
+  skip_first_minutes: 0  # We want to catch opening range
+
+strategy:
+  or_period_minutes: 30  # Opening range = first 30 minutes
+
+  # V3 NEW: Regime Detection
+  use_regime_filter: true  # Enable/disable regime detection
+  regime:
+    adx_threshold: 20        # ADX > 20 = trending market
+    atr_zscore_threshold: -0.5  # ATR Z-score > -0.5 = decent volatility
+
+  # V2 Risk Management (keep wider stops, realistic targets)
+  risk:
+    risk_per_trade_pct: 1.0  # 1% risk per trade
+
+    # Wider stops (let trades breathe)
+    orb_stop_mult: 1.5      # ORB: 1.5× ATR
+    vwap_stop_mult: 2.0     # VWAP: 2× ATR
+    momentum_stop_mult: 2.5  # Momentum: 2.5× ATR
+
+    # Realistic targets (take profit sooner)
+    orb_target_mult: 2.0    # ORB: 2R
+    vwap_target_mult: 2.0   # VWAP: 2R
+    momentum_target_mult: 2.0  # Momentum: 2R
+
+    # Improved Trailing stop
+    trailing_atr_mult: 1.5  # Trail by 1.5× ATR
+    activate_trail_at_r: 0.8  # Activate after 0.8R profit
+    min_profit_lock_r: 0.5  # Move to breakeven after TP1
+
+    atr_period: 14
+
+  # V3 RELAXED Risk Controls (regime filter does the work)
+  controls:
+    max_consecutive_losses: 10  # Higher limit (vs 6) - regime filter prevents bad periods
+    daily_loss_limit_pct: 5.0  # Higher limit (vs 3%) - better filtering
+    max_positions: 1  # One at a time
+    max_trades_per_day: 6  # More trades allowed (vs 4) - all day ORB
+
+backtest:
+  initial_capital: 100000
+  currency: "EUR"
+  point_value: 1.0
+  commission_per_contract: 2.50
+  slippage_atr_mult: 0.3  # Less slippage (main session, tight spreads)
+
+output:
+  trade_log_path: "results_v3/trade_log.csv"
+  equity_curve_path: "results_v3/equity_curve.csv"
+  performance_report_path: "results_v3/performance_report.txt"
+  plot_equity_curve: true
+  plot_drawdown: true
+  plot_monthly_returns: true

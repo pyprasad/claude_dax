@@ -145,6 +145,45 @@ def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> 
     return tr.rolling(window=period).mean()
 
 
+def adx(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.Series:
+    """
+    Average Directional Index (ADX)
+    Measures trend strength (not direction)
+    > 25 = strong trend
+    > 20 = trending
+    < 20 = ranging/choppy
+    """
+    # Calculate directional movement
+    high_diff = high.diff()
+    low_diff = -low.diff()
+
+    # Positive and negative directional movement
+    pos_dm = high_diff.copy()
+    neg_dm = low_diff.copy()
+
+    pos_dm[((high_diff < low_diff) | (high_diff < 0))] = 0
+    neg_dm[((low_diff < high_diff) | (low_diff < 0))] = 0
+
+    # True Range
+    tr1 = high - low
+    tr2 = (high - close.shift(1)).abs()
+    tr3 = (low - close.shift(1)).abs()
+    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+
+    # Smoothed TR and DM
+    atr_val = tr.rolling(window=period).mean()
+    pos_di = 100 * (pos_dm.rolling(window=period).mean() / atr_val)
+    neg_di = 100 * (neg_dm.rolling(window=period).mean() / atr_val)
+
+    # Directional Index
+    dx = 100 * (pos_di - neg_di).abs() / (pos_di + neg_di)
+
+    # ADX (smoothed DX)
+    adx_val = dx.rolling(window=period).mean()
+
+    return adx_val
+
+
 def calculate_professional_indicators(df: pd.DataFrame, config: dict) -> pd.DataFrame:
     """
     Calculate all indicators for professional DAX trading
@@ -188,6 +227,9 @@ def calculate_professional_indicators(df: pd.DataFrame, config: dict) -> pd.Data
     atr_mean = data['ATR'].rolling(window=100).mean()
     atr_std = data['ATR'].rolling(window=100).std()
     data['ATR_ZScore'] = (data['ATR'] - atr_mean) / atr_std
+
+    # ADX for regime detection (trending vs ranging)
+    data['ADX'] = adx(data['high'], data['low'], data['close'], 14)
 
     # Trend direction (simple: price vs EMAs)
     data['uptrend'] = data['close'] > data['EMA_50']
