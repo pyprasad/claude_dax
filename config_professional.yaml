@@ -1,0 +1,66 @@
+# PROFESSIONAL DAX INTRADAY STRATEGY
+# Based on institutional tactics: ORB + VWAP + Momentum
+# This is what real professional DAX traders use
+
+data:
+  filepath: "data/dax_2019_5m_main_session.csv"
+  date_column: "Datetime"
+  ohlcv_columns:
+    open: "Open"
+    high: "High"
+    low: "Low"
+    close: "Close"
+    volume: "Volume"
+  timeframe: "5min"
+
+session:
+  start_time: "06:00"  # UTC (07:00-08:00 CET depending on DST)
+  end_time: "21:00"    # UTC (22:00-23:00 CET)
+  entry_cutoff: "18:00"  # Stop new entries 3 hours before close
+  exit_buffer: 30
+  skip_first_minutes: 0  # We want to catch opening range
+
+strategy:
+  or_period_minutes: 30  # Opening range = first 30 minutes
+
+  # Risk Management - Professional approach
+  risk:
+    risk_per_trade_pct: 1.0  # 1% risk per trade
+
+    # Stops (wider for trending - let trades breathe)
+    orb_stop_mult: 1.0      # ORB: Stop at OR opposite side (or 1× ATR)
+    vwap_stop_mult: 1.5     # VWAP: 1.5× ATR below/above entry
+    momentum_stop_mult: 2.0  # Momentum: 2× ATR (widest - catching trends)
+
+    # Targets (trends run - aim high)
+    orb_target_mult: 2.0    # ORB: 2× OR size
+    vwap_target_mult: 3.0   # VWAP: 3× ATR
+    momentum_target_mult: 4.0  # Momentum: 4× ATR (ride the trend)
+
+    # Trailing stop (lock in profits)
+    trailing_atr_mult: 2.0  # Trail by 2× ATR
+    activate_trail_at_r: 1.5  # Activate after 1.5R profit
+
+    atr_period: 14
+
+  # Risk Controls (more lenient - we're trend trading)
+  controls:
+    max_consecutive_losses: 5  # Can handle more losses (trends work)
+    daily_loss_limit_pct: 3.0  # 3% daily max
+    max_positions: 1  # One at a time
+    max_trades_per_day: 3  # Max 3 entries per day
+
+backtest:
+  initial_capital: 100000
+  currency: "EUR"
+  point_value: 1.0
+  commission_per_contract: 2.50
+  slippage_atr_mult: 0.3  # Less slippage (main session, tight spreads)
+
+output:
+  trade_log_path: "results/trade_log_pro.csv"
+  equity_curve_path: "results/equity_curve_pro.csv"
+  performance_report_path: "results/performance_report_pro.txt"
+  plot_equity_curve: true
+  plot_drawdown: true
+  plot_monthly_returns: true
