@@ -372,29 +372,30 @@ class BacktestEngine:
                     }
                     self.close_position(exit_info, current_row)
 
-            # Check for new entry signal (only if no position)
-            if current_row['Signal'] != 0 and self.current_position is None:
+            # Check for new entry signal on PREVIOUS bar (only if no position)
+            # This prevents lookahead bias: signal detected at bar N close, entry at bar N+1 open
+            if prev_row['Signal'] != 0 and self.current_position is None:
                 if self.check_risk_controls(current_date):
-                    signal_type = current_row['Signal_Type']
-                    direction = int(current_row['Signal'])
+                    signal_type = prev_row['Signal_Type']
+                    direction = int(prev_row['Signal'])
 
-                    # Calculate position size
+                    # Calculate position size using prev bar's ATR (known at signal time)
                     position_size = strategy.calculate_position_size(
                         self.equity,
-                        current_row['ATR'],
+                        prev_row['ATR'],
                         signal_type,
-                        current_row['ATR_ZScore']
+                        prev_row['ATR_ZScore']
                     )
 
-                    # Calculate stops and targets
+                    # Calculate stops and targets using current bar's open (entry price)
                     stops_targets = strategy.calculate_stops_and_targets(
-                        current_row['open'],  # Will enter at next bar open
-                        current_row['ATR'],
+                        current_row['open'],  # Enter at current bar open (next bar after signal)
+                        prev_row['ATR'],
                         signal_type,
                         direction
                     )
 
-                    # Open position (executed at next bar open, which is current_row)
+                    # Open position (executed at current bar open, signal was on prev bar)
                     self.open_position(
                         timestamp,
                         current_row,

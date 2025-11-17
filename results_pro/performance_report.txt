@@ -1,0 +1,70 @@
+================================================================================
+ADAPTIVE REGIME INTRADAY (ARI) STRATEGY - BACKTEST RESULTS
+================================================================================
+
+OVERALL PERFORMANCE
+--------------------------------------------------------------------------------
+Initial Capital:        $100,000.00
+Final Equity:           $79,673.08
+Total P&L:              $-20,326.92
+Total Return:           -20.33%
+CAGR:                   -99.44%
+Max Drawdown:           20.33%
+
+TRADE STATISTICS
+--------------------------------------------------------------------------------
+Total Trades:           26
+Winning Trades:         7
+Losing Trades:          19
+Win Rate:               26.92%
+Profit Factor:          0.02
+Expectancy:             $-781.80
+
+WIN/LOSS ANALYSIS
+--------------------------------------------------------------------------------
+Average Win:            $45.50
+Average Loss:           $-1086.60
+Avg Win/Avg Loss:       0.04
+Largest Win:            $87.53
+Largest Loss:           $-2398.22
+
+HOLDING TIME
+--------------------------------------------------------------------------------
+Average Holding Time:   39.8 minutes (0.66 hours)
+Min Holding Time:       5.0 minutes
+Max Holding Time:       715.0 minutes
+
+STRATEGY TYPE BREAKDOWN
+--------------------------------------------------------------------------------
+
+ORB_LONG:
+  Trades: 12, Win Rate: 33.3%, P&L: $-8739.73
+
+ORB_SHORT:
+  Trades: 13, Win Rate: 23.1%, P&L: $-10442.50
+
+VWAP_LONG:
+  Trades: 1, Win Rate: 0.0%, P&L: $-1144.69
+
+RISK METRICS
+--------------------------------------------------------------------------------
+Sharpe Ratio:           -12.25
+Sortino Ratio:          -12.01
+Calmar Ratio:           -4.89
+Max Consecutive Wins:   2
+Max Consecutive Losses: 6
+
+MAE/MFE ANALYSIS (Maximum Adverse/Favorable Excursion)
+--------------------------------------------------------------------------------
+Average MAE:            $34.30
+Average MFE:            $56.71
+MFE/MAE Ratio:          1.65
+
+MONTHLY RETURNS
+--------------------------------------------------------------------------------
+Best Month:             -20.33%
+Worst Month:            -20.33%
+Avg Monthly Return:     -20.33%
+Positive Months:        0/1
+
+================================================================================

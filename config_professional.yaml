@@ -3,20 +3,20 @@
 # This is what real professional DAX traders use
 
 data:
-  filepath: "data/dax_2019_5m_main_session.csv"
-  date_column: "Datetime"
+  filepath: "data/DAX_5min_realistic.csv"
+  date_column: "timestamp"
   ohlcv_columns:
-    open: "Open"
-    high: "High"
-    low: "Low"
-    close: "Close"
-    volume: "Volume"
+    open: "open"
+    high: "high"
+    low: "low"
+    close: "close"
+    volume: "volume"
   timeframe: "5min"
 
 session:
-  start_time: "06:00"  # UTC (07:00-08:00 CET depending on DST)
-  end_time: "21:00"    # UTC (22:00-23:00 CET)
-  entry_cutoff: "18:00"  # Stop new entries 3 hours before close
+  start_time: "09:00"  # CET - DAX main session start
+  end_time: "22:00"    # CET - DAX main session end
+  entry_cutoff: "19:00"  # Stop new entries 3 hours before close
   exit_buffer: 30
   skip_first_minutes: 0  # We want to catch opening range
 
@@ -40,6 +40,7 @@ strategy:
     # Trailing stop (lock in profits)
     trailing_atr_mult: 2.0  # Trail by 2× ATR
     activate_trail_at_r: 1.5  # Activate after 1.5R profit
+    min_profit_lock_r: 1.0  # Lock in 1R profit after TP1
 
     atr_period: 14
 

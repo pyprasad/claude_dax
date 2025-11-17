@@ -266,11 +266,12 @@ class ProfessionalDAXStrategy:
 
         return signals
 
-    def calculate_position_size(self, equity: float, atr: float, signal_type: str) -> int:
+    def calculate_position_size(self, equity: float, atr: float, signal_type: str, atr_zscore: float = 0) -> int:
         """
         Calculate position size using ATR-based risk
 
         Professional approach: Risk same $ amount per trade
+        Note: atr_zscore parameter included for compatibility but not used
         """
         risk_pct = self.params['risk']['risk_per_trade_pct'] / 100
         risk_amount = equity * risk_pct
@@ -337,9 +338,19 @@ class ProfessionalDAXStrategy:
 
         trailing_dist = atr * risk_params['trailing_atr_mult']
 
+        # Calculate partial exit levels (tp1 at 60% of target, tp2 at full target)
+        target_distance = abs(target - entry_price)
+        if direction == 1:  # Long
+            tp1 = entry_price + (target_distance * 0.6)
+            tp2 = target
+        else:  # Short
+            tp1 = entry_price - (target_distance * 0.6)
+            tp2 = target
+
         return {
             'stop_loss': stop_loss,
-            'target': target,
+            'tp1': tp1,
+            'tp2': tp2,
             'trailing_stop_distance': trailing_dist,
             'risk_amount': abs(entry_price - stop_loss)
         }

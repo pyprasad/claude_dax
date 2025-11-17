@@ -206,4 +206,8 @@ def calculate_professional_indicators(df: pd.DataFrame, config: dict) -> pd.Data
     data['orb_long_signal'] = data['close'] > data['or_high']
     data['orb_short_signal'] = data['close'] < data['or_low']
 
+    # Regime (always MOMENTUM for trend-following strategy)
+    # This prevents backtest engine from exiting on regime changes
+    data['Regime'] = 'MOMENTUM'
+
     return data
